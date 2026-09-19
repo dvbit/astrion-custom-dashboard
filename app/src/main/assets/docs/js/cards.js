@@ -56,7 +56,8 @@ function updateCardFormInputs() {
       ${iconFieldHtml('optTitleIcon')}
       <label class="inline-check"><input type="checkbox" id="optTitleDivider"> Divider line (fills the rest of the row after the title)</label>
       <label>Color (optional, ARGB/RGB hex — defaults to the standard title color, also tints the divider line)</label><input type="text" id="optTitleColor" placeholder="#7FB3C4">
-      <div class="hint">A section header for grouping the cards below it — no entity of its own. Setting an icon or the divider always left-aligns the title row regardless of Alignment (that layout has no sensible centered/right-aligned form) — the subtitle below is unaffected. For a tappable title/subtitle (e.g. a "see all" link to another page), use "Other / custom type…" below instead and add title_page / subtitle_page — or any of scene_grid's other action fields with a title_/subtitle_ prefix — directly in the JSON; like every type here, re-saving through this simple form overwrites the card's options from scratch, so those fields wouldn't survive a later edit through it.</div>
+      <div class="hint">A section header for grouping the cards below it — no entity of its own. Setting an icon or the divider always left-aligns the title row regardless of Alignment (that layout has no sensible centered/right-aligned form) — the subtitle below is unaffected. The title and the subtitle can each be made tappable with the two blocks below (same actions as a scene_grid tile).</div>
+      ${titleActionFieldsHtml() /* [S7] docs/EDITOR_FORMS_SPEC.md */}
     `;
   } else if (type === 'switch') {
     container.innerHTML = `
@@ -344,6 +345,11 @@ function updateCardFormInputs() {
       <label>Items per row</label><input type="number" id="optPlexItemsPerRow" value="12" min="1" max="30">
       <div class="hint">Movies/TV are detected automatically from your Plex libraries' own type (no need to type a library name) — if several libraries share a type (e.g. "Movies" + "Movies 4K") their items are merged into one row. Tap a poster for a detail view — synopsis, genres, episode browser for a show — with its own Play button, which is what actually attempts a direct deep-link (requires a direct playback entity below, and for the HA Plex integration, that the TV's Plex app is already open and connected). Long-press a poster to open Plex on the playback entity directly (quick action) — bound to long-press rather than tap since these rows scroll under a finger and an accidental tap mid-scroll shouldn't trigger a real Home Assistant call.</div>
     `;
+  } else if (typeof ADV_FORMS !== 'undefined' && ADV_FORMS[type]) {
+    // [S3]-[S6] speaker_group / monitor / row / picture_elements — forms live
+    // in js/cards-advanced.js (see docs/EDITOR_FORMS_SPEC.md).
+    container.innerHTML = ADV_FORMS[type].html();
+    ADV_FORMS[type].init();
   } else {
     // Advanced / custom: raw options JSON, and free type name if "custom"
     container.innerHTML = `
@@ -702,10 +708,11 @@ function removeVacuumRoom(i) {
 // the ✎ edit icon on a card in the preview, same as clicking "+ ADD CARD" or
 // a card's own edit action in the Home Assistant dashboard editor.
 function openCardDialog(idx) {
+  // [S5] always start from the page level with clean form state.
+  cardEditStack = [];
+  advResetFormState();
   editingCard = idx;
   const isNew = idx === null;
-  document.getElementById('cardEditorTitle').textContent = isNew ? 'Add card' : 'Edit card';
-  document.getElementById('addCardBtn').innerText = isNew ? 'Add card to page' : 'Save changes';
 
   const select = document.getElementById('cardTypeSelect');
   if (isNew) {
@@ -719,6 +726,7 @@ function openCardDialog(idx) {
     fillCardForm(card);
   }
 
+  advUpdateDialogLabels(); // [S5] title/button labels (page vs inside a row)
   document.getElementById('cardEditorModal').classList.add('open');
 }
 
@@ -761,6 +769,7 @@ function fillCardForm(card) {
     updateIconThumb('optTitleIcon');
     document.getElementById('optTitleDivider').checked = o.divider === true;
     document.getElementById('optTitleColor').value = o.color || '';
+    fillTitleActions(o); // [S7]
   } else if (type === 'switch') {
     document.getElementById('optName').value = o.name || '';
     setEntitySelectValue('optEntityId', o.entity_id);
@@ -890,6 +899,8 @@ function fillCardForm(card) {
     document.getElementById('optPlexShowMovies').checked = o.show_recently_added_movies !== false;
     document.getElementById('optPlexShowShows').checked = o.show_recently_added_shows !== false;
     document.getElementById('optPlexItemsPerRow').value = o.items_per_row ?? 12;
+  } else if (typeof ADV_FORMS !== 'undefined' && ADV_FORMS[type]) {
+    ADV_FORMS[type].fill(o); // [S3]-[S6]
   } else {
     const customField = document.getElementById('optCustomType');
     if (customField) customField.value = type;
@@ -898,9 +909,10 @@ function fillCardForm(card) {
 }
 
 function cancelCardEdit() {
+  // [S5] While a row child is open, Cancel / ✕ / backdrop return to the row.
+  if (cardEditStack.length) { advCancelChild(); return; }
   editingCard = null;
-  window._pendingGridItems = [];
-  window._pendingVacuumRooms = [];
+  advResetFormState(); // also clears _pendingGridItems/_pendingVacuumRooms
   document.getElementById('addCardBtn').innerText = 'Add card to page';
   document.getElementById('cardEditorModal').classList.remove('open');
 }
@@ -946,6 +958,10 @@ function addCardToPage() {
     if (document.getElementById('optTitleDivider').checked) newCard.options.divider = true;
     const titleColor = document.getElementById('optTitleColor').value.trim();
     if (titleColor) newCard.options.color = titleColor;
+    // [S7] title_*/subtitle_* tap actions; null = incomplete (already alerted).
+    const titleActions = buildTitleActions();
+    if (!titleActions) return;
+    Object.assign(newCard.options, titleActions);
   } else if (type === 'switch') {
     newCard.options.name = document.getElementById('optName').value || 'Switch';
     newCard.options.entity_id = document.getElementById('optEntityId').value || 'switch.entity';
@@ -1137,12 +1153,22 @@ function addCardToPage() {
     newCard.options.show_recently_added_shows = document.getElementById('optPlexShowShows').checked;
     const plexItemsPerRow = parseInt(document.getElementById('optPlexItemsPerRow').value, 10);
     if (!isNaN(plexItemsPerRow) && plexItemsPerRow !== 12) newCard.options.items_per_row = plexItemsPerRow;
+  } else if (typeof ADV_FORMS !== 'undefined' && ADV_FORMS[type]) {
+    // [S3]-[S6] build() alerts and returns null when the form is incomplete.
+    const built = ADV_FORMS[type].build();
+    if (!built) return;
+    newCard.options = built;
   } else {
     if (type === 'custom') newCard.type = document.getElementById('optCustomType').value.trim() || 'custom';
     try {
       newCard.options = JSON.parse(document.getElementById('optRawJson').value || '{}');
     } catch (e) { alert('Options must be valid JSON'); return; }
   }
+
+  // [S2] keep option keys this form doesn't model (pin, layout, step, …).
+  preserveUnknownOptions(advOriginalCard(), newCard);
+  // [S5] a card opened from inside a row goes back into that row's draft.
+  if (cardEditStack.length) { advCommitChild(newCard); return; }
 
   if (editingCard !== null) {
     dashboardData.pages[pageIndex].cards[editingCard] = newCard;

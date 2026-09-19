@@ -1,0 +1,7 @@
+{
+  "name": "astrion-builder-tests",
+  "private": true,
+  "description": "Headless checks for the web builder card forms — docs/EDITOR_FORMS_SPEC.md [S11]",
+  "scripts": { "test": "node test.js" },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}

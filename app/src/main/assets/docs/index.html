@@ -273,17 +273,20 @@
                     <option value="apple_tv_remote">Apple TV remote (apple_tv_remote)</option>
                     <option value="tv_remote">TV / media remote (tv_remote)</option>
                 </optgroup>
-                <optgroup label="Advanced (raw options)">
+                <!-- [S9] docs/EDITOR_FORMS_SPEC.md: the four former raw-only types have forms now -->
+                <optgroup label="Media &amp; layout">
+                    <option value="speaker_group">Speaker group (speaker_group)</option>
+                    <option value="monitor">Sensor values (monitor)</option>
+                    <option value="picture_elements">Floor plan (picture_elements)</option>
+                    <option value="row">Row of cards (row)</option>
+                </optgroup>
+                <optgroup label="Advanced">
                     <option value="clock_weather">Clock &amp; weather (clock_weather)</option>
                     <option value="media_player">Media player (media_player)</option>
                     <option value="camera">Camera (camera)</option>
-                    <option value="speaker_group">Speaker group (speaker_group)</option>
-                    <option value="monitor">System monitor (monitor)</option>
-                    <option value="picture_elements">Picture elements (picture_elements)</option>
                     <option value="plex">Plex (plex)</option>
-                    <option value="row">Row layout (row)</option>
                     <option value="vacuum">Vacuum (vacuum)</option>
-                    <option value="custom">Other / custom type…</option>
+                    <option value="custom">Other / custom type… (raw JSON)</option>
                 </optgroup>
             </select>
 
@@ -373,6 +376,7 @@
 <script src="js/mocks.js"></script>
 <script src="js/pages.js"></script>
 <script src="js/cards.js"></script>
+<script src="js/cards-advanced.js"></script>
 <script src="js/harmony.js"></script>
 <script src="js/hotkeys.js"></script>
 <script src="js/activities.js"></script>

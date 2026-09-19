@@ -622,3 +622,46 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     --accent: #6EA8FE; --accent2: #4C6EF5; --amber: #FFC24B;
     --danger: #E06767; --success: #4CAF50;
   }
+  /* ---- Advanced card forms & previews — js/cards-advanced.js ----
+     Spec: docs/EDITOR_FORMS_SPEC.md [S3]-[S8]. */
+  .adv-list { margin-bottom: 6px; }
+  .adv-list .list-item { justify-content: flex-start; }
+  .adv-list-row { flex-wrap: nowrap; }
+  .adv-list-row input, .adv-list-row select { padding: 6px; font-size: 0.8rem; }
+  .adv-list-idx { color: #777; font-size: 0.75rem; min-width: 16px; text-align: right; flex-shrink: 0; }
+  .adv-list-btn { color: #9FB6BD; cursor: pointer; font-weight: bold; flex-shrink: 0; padding: 0 2px; user-select: none; }
+  .adv-list-btn:hover { color: #00E5FF; }
+  .adv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 10px; }
+  /* [S6.3] positioning canvas: background = local image (object URL) or a grid. */
+  .pe-canvas { position: relative; width: 100%; margin-top: 8px; border: 1px solid #444; border-radius: 8px;
+    background-color: #1a1a1a; background-size: 100% 100%; background-repeat: no-repeat; overflow: hidden; touch-action: none; }
+  .pe-canvas.pe-canvas-empty { background-image: linear-gradient(#2a2a2a 1px, transparent 1px), linear-gradient(90deg, #2a2a2a 1px, transparent 1px) !important;
+    background-size: 10% 10% !important; background-repeat: repeat !important; }
+  .pe-marker { position: absolute; transform: translate(-50%, -50%); min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box;
+    border-radius: 11px; font-size: 0.72rem; font-weight: 700; line-height: 22px; text-align: center; white-space: nowrap;
+    cursor: grab; user-select: none; touch-action: none; box-shadow: 0 1px 4px rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.6); }
+  .pe-marker:active { cursor: grabbing; }
+  .pe-m-bulb { background: #FFC24B; color: #121212; }
+  .pe-m-power { background: #E06767; color: #fff; }
+  .pe-m-radar { background: #6EA8FE; color: #121212; }
+  .pe-m-room { background: #4CAF50; color: #fff; }
+  .pe-m-dock { background: #9C6ADE; color: #fff; }
+  /* [S8] preview renderers (inside .remote-screen, so theme variables apply). */
+  .adv-pv-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--inset); font-size: 12px; color: var(--text); }
+  .adv-pv-row:last-child { border-bottom: none; }
+  .adv-pv-check { color: var(--accent); }
+  .adv-pv-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .adv-pv-val { color: var(--muted); }
+  .adv-pv-bar { flex: 0 0 70px; height: 8px; border-radius: 4px; background: var(--inset); overflow: hidden; }
+  .adv-pv-bar span { display: block; height: 100%; background: var(--accent2); }
+  .adv-pv-btns { color: var(--muted); font-size: 11px; }
+  .adv-pv-rowbox { display: flex; gap: 6px; }
+  .adv-pv-child { flex: 1 1 0; min-width: 0; background: var(--inset); border-radius: 10px; padding: 8px; font-size: 11px; color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; }
+  .adv-pv-plan { position: relative; width: 100%; border-radius: 12px; background-color: var(--inset);
+    background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 10% 10%; }
+  .adv-pv-dot { position: absolute; transform: translate(-50%, -50%); width: 22px; height: 22px; color: var(--icon); font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .adv-pv-dot.on { color: var(--amber); }
+  .adv-pv-dot.radar, .adv-pv-dot.dock { background: var(--control); border-radius: 50%; }

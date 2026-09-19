@@ -3,6 +3,26 @@
 All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.0] - 2026-09-19
+
+### Added
+
+- **Web builder: forms for the last four raw-JSON card types** (spec: [`docs/EDITOR_FORMS_SPEC.md`](docs/EDITOR_FORMS_SPEC.md)), in a new `js/cards-advanced.js` hooked into the existing `cards.js` dispatch:
+  - `speaker_group` — master picker (device catalog), display name, reorderable speaker list.
+  - `monitor` — title and a reorderable list of any-domain entities with optional labels.
+  - `row` — list of child cards, each edited in the same dialog with its own type's form (a `row` inside a `row` works too). Children stay in a draft until the row itself is saved; Cancel/✕ inside a child returns to the row.
+  - `picture_elements` — image path, aspect ratio, entity/service elements, radar overlay (every field `PictureElementsCard.kt` reads) and vacuum overlay (room positions, dock, room-clean buttons/service). A local copy of the floor plan (browser file picker, never uploaded or saved) is the background of a canvas where elements, radar origin, room positions and dock are placed by dragging (mouse or touch).
+  - `title` — title and subtitle tap actions (`title_*` / `subtitle_*`: scene/script, Harmony activity/command, local IR, composed Activity, plus optional page).
+- Phone preview renderers for `speaker_group`, `monitor`, `row` and `picture_elements` (live HA values when the builder is served by the device).
+
+### Changed
+
+- Card type picker: the four types above moved from "Advanced (raw options)" to a new "Media & layout" group.
+
+### Fixed
+
+- **Re-saving a card through its form silently dropped every option the form didn't model** — e.g. `pin: "bottom"`, a `scene_grid`'s `layout: "row"`, a `climate`'s `step`, a `tv_remote`'s `commands`/`apps`. Unmodeled keys are now carried over when the card keeps its type (`FORM_MANAGED_KEYS` / `preserveUnknownOptions()`); keys a form does manage are still removed when cleared.
+
 ## [1.1.4-beta] - 2026-09-19
 
 ### Added

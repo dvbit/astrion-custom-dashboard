@@ -1016,6 +1016,9 @@ function renderPreview() {
           ${rowsHtml}
           <div class="hint" style="margin-top:8px">Titles/posters shown here are placeholders — real Plex data loads live on the device. Server: ${o.host || '(not set)'} · Playback entity: ${o.media_entity || '(not set)'}${o.play_entity ? ' · Direct client: ' + o.play_entity : ''} · ${o.items_per_row ?? 12} items/row.</div>
         </div>`;
+    } else if (typeof advPreviewHtml === 'function' && advPreviewHtml(card, idx)) {
+      // [S8] speaker_group / monitor / row / picture_elements — js/cards-advanced.js
+      cardEl.innerHTML = advPreviewHtml(card, idx);
     } else {
       cardEl.className = 'card';
       cardEl.innerHTML = `
